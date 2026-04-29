@@ -19,8 +19,8 @@
 
 - 🎯 **SGMCMC + Kalman Filter 통합** — Kalman Filter로 우도/기울기를 계산하고 SGLD·SGHMC·SGNHT로 사후분포 샘플링
 - 🔄 **Streaming Pipeline** — Apache Kafka + Zookeeper로 배치 단위 온라인 학습 환경 구축
-- 🧪 **6종 알고리즘 비교** — MLE / GD / SGD / SGLD / SGHMC / SGNHT (+ Gibbs Sampling 확장)
-- 📈 **NAB 벤치마크 검증** — SGLD-KF가 F1 · Accuracy 최우수 성능 달성
+- 🧪 **7종 방법 통합 비교** — MLE / GD / SGD / SGLD / SGHMC / SGNHT / Gibbs Sampling 을 단일 파이프라인에서 비교
+- 📈 **NAB 벤치마크 검증** — SGLD-KF가 F1 및 Precision 최우수 (100% Recall 유지)
 - 🎲 **BMA 기반 불확실성** — 파라미터 사후분포 분산을 신뢰구간에 반영해 적응적 이상치 임계값 설정
 
 ---
@@ -35,10 +35,12 @@ flowchart LR
     D -->|score / loglike| E{Update Method}
     E -->|method=mle| F[fit + extend]
     E -->|method=sgmcmc| G[SGLD / SGHMC / SGNHT<br/>Posterior Sampling]
-    G --> H[BMA Uncertainty]
-    F --> I[Anomaly Detection<br/>Adaptive CI]
+    E -->|method=gibbs| H[Gibbs Sampling]
+    G --> I[BMA Uncertainty]
     H --> I
-    I --> J[Metrics<br/>F1 · Acc · MSE]
+    F --> J[Anomaly Detection<br/>Adaptive CI]
+    I --> J
+    J --> K[Metrics<br/>F1 · Acc · MSE]
 ```
 
 **핵심 아이디어**: 칼만필터가 계산하는 ∂loglik/∂θ 를 SGMCMC의 ∇U(θ) 로 사용. 별도의 자동미분 없이 statsmodels의 `score()` 만으로 베이지안 추론이 가능합니다.
@@ -49,20 +51,12 @@ flowchart LR
 
 ```
 SGMCMC-KF/
-├── README.md                              # 본 문서
-├── requirements.txt                       # Python 의존성
+├── README.md                  # 본 문서
+├── requirements.txt           # Python 의존성
 ├── .gitignore
 ├── LICENSE
-│
-├── notebooks/
-│   ├── SGMCMC_KF_main.ipynb               # 🌟 논문 메인 실험 (6종 알고리즘 비교)
-│   └── SGMCMC_KF_Gibbs_extension.ipynb    # Gibbs Sampling 확장 실험
-│
-├── data/
-│   └── README.md                          # NAB 데이터셋 다운로드 가이드
-│
-└── docs/
-    └── figures/                           # 논문 그림 및 결과 시각화
+└── notebooks/
+    └── SGMCMC_KF.ipynb        # 통합 노트북 (7가지 방법 비교 실험)
 ```
 
 ---
@@ -105,14 +99,16 @@ $KAFKA_HOME/bin/kafka-topics.sh --create \
 ### 3. 노트북 실행
 
 ```bash
-jupyter notebook notebooks/SGMCMC_KF_main.ipynb
+jupyter notebook notebooks/SGMCMC_KF.ipynb
 ```
 
 데이터는 NAB GitHub에서 자동으로 다운로드되므로 별도 준비가 필요 없습니다.
 
 ---
 
-## 🧮 Algorithms
+## 🧮 Methods
+
+본 노트북은 다음 7가지 파라미터 추정 방법을 동일한 SARIMAX + Kalman Filter 파이프라인 위에서 통합 비교합니다.
 
 | # | Method | Update Rule | Stochastic | Notes |
 |:-:|:------:|:-----------:|:----------:|:------|
@@ -122,14 +118,16 @@ jupyter notebook notebooks/SGMCMC_KF_main.ipynb
 | 4 | **SGLD** | θ ← θ − η ∇U + √(2η)·N(0,I) | ✅ | Langevin Dynamics |
 | 5 | **SGHMC** | momentum + friction | ✅ | Hamiltonian Monte Carlo |
 | 6 | **SGNHT** | adaptive thermostat | ✅ | 자동 friction 보정 |
-| 7 | **Gibbs** *(extension)* | 조건부 사후분포 샘플링 | ✅ | 확장 노트북 전용 |
+| 7 | **Gibbs** | 조건부 사후분포 샘플링 | ✅ | 파라미터 블록별 순차 업데이트 |
+
+방법 선택은 `fit_model(..., method='sgld')` 처럼 인자로 전환합니다.
 
 ### Hyperparameters
 
 ```python
 # 모델
 ORDER          = (0, 1, 1)
-SEASONAL_ORDER = (1, 1, 0, 48)     # 30분 단위 데이터의 일별 주기
+SEASONAL_ORDER = (1, 1, 0, 12)     # 1시간 주기
 BATCH_SIZE     = 48                # 배치당 샘플 수
 
 # 베이지안 사전분포
@@ -148,31 +146,45 @@ SIGMA_LEVEL   = 1.2                # 이상치 신뢰구간 배수
 
 [NAB (Numenta Anomaly Benchmark)](https://github.com/numenta/NAB) 공개 데이터셋을 사용합니다.
 
-| Dataset | 길이 | Anomalies | 사용 노트북 |
-|---------|-----:|:---------:|:----------:|
-| `realKnownCause/machine_temperature_system_failure.csv` | 22,695 | 4 | main, gibbs |
-| `realKnownCause/nyc_taxi.csv` | 10,320 | 5 | main |
+| Dataset | 길이 | Anomalies | 비고 |
+|---------|-----:|:---------:|:----|
+| `realKnownCause/nyc_taxi.csv` | 10,320 | 5 | **본 연구 메인 실험 데이터** |
+| `realKnownCause/machine_temperature_system_failure.csv` | 22,695 | 4 | 일반화 검증용 보조 데이터 |
 
 데이터는 노트북 실행 시 NAB GitHub raw URL에서 자동 로드됩니다 (별도 다운로드 불필요).
+
+데이터셋 변경은 노트북 상단 `DATASET` 변수에서 한 줄만 수정하시면 됩니다.
+
+```python
+DATASET = 'realKnownCause/nyc_taxi.csv'                              # 메인
+# DATASET = 'realKnownCause/machine_temperature_system_failure.csv'  # 보조
+```
+
+> 📌 NYC Taxi 데이터는 10,320 시계열 포인트 중 라벨링된 이상치가 5개에 불과한 **극단적 클래스 불균형 벤치마크**입니다. 이 때문에 모든 방법의 절대 F1 값은 한 자릿수대로 측정되며, 본 연구의 평가는 *방법 간 상대 비교*에 초점을 둡니다.
 
 ---
 
 ## 🏆 Key Results
 
-NAB Machine Temperature 데이터셋, 배치 단위 평가 (대표 결과 — 자세한 수치는 논문 Table 2 참조):
+### Table 2. The Results of NYC Taxi Train Dataset
 
-| Method | Accuracy | Precision | Recall | F1 | RMSE |
-|:------:|:--------:|:---------:|:------:|:--:|:----:|
-| MLE     | 0.852 | 0.741 | 0.683 | 0.711 | 0.118 |
-| GD      | 0.864 | 0.755 | 0.702 | 0.728 | 0.115 |
-| SGD     | 0.871 | 0.768 | 0.715 | 0.741 | 0.112 |
-| **SGLD** | **0.893** | **0.804** | **0.762** | **0.782** | **0.103** |
-| SGHMC   | 0.881 | 0.787 | 0.738 | 0.762 | 0.108 |
-| SGNHT   | 0.876 | 0.779 | 0.728 | 0.753 | 0.110 |
+| Method   | Accuracy (%) | Precision (%) | Recall (%) | F1 (%)  | Time (s) |
+|:---------|:------------:|:-------------:|:----------:|:-------:|:--------:|
+| MLE      | 64.33        | 3.17          | 100        | 6.15    | 20.6     |
+| Gibbs    | **81.29**    | 3.12          | 50         | 5.88    | 170.8    |
+| GD       | 64.33        | 3.17          | 100        | 6.15    | 27.5     |
+| SGD      | 65.50        | 3.28          | 100        | 6.35    | 34.0     |
+| **SGLD** | 69.59        | **3.70**      | 100        | **7.14**| 31.0     |
+| SGHMC    | 73.68        | 2.22          | 50         | 4.26    | 41.6     |
+| SGNHT    | 66.67        | 3.39          | 100        | 6.56    | 41.0     |
 
-> ⚠️ 위 표는 논문 게재본 기준 대표 수치 예시입니다. 실제 노트북 재현 결과로 교체하실 것을 권장합니다.
+### 핵심 관찰
 
-**핵심 관찰**: SGLD-KF는 Langevin noise가 가져오는 mode exploration 효과로 비정상 패턴 변화에 가장 빠르게 적응했고, 모든 지표에서 일관되게 우수한 성능을 보였습니다.
+**SGLD-KF는 F1 score(7.14%)와 Precision(3.70%) 모두에서 7가지 방법 중 최우수 성능**을 달성했으며, 동시에 100% Recall을 유지하여 가장 균형 잡힌 탐지 성능을 보였습니다. Langevin noise가 가져오는 mode exploration 효과로 비정상 패턴 변화에 빠르게 적응한 결과로 해석됩니다.
+
+**Gibbs Sampling**은 가장 높은 Accuracy(81.29%)를 기록했으나, Recall이 50%로 떨어져 실제 이상치의 절반을 놓치는 trade-off를 보였습니다. 또한 학습 시간이 170.8초로 SGLD(31.0초) 대비 약 5.5배 길어, **스트리밍 환경에서는 SGLD-KF가 정확도-속도 trade-off에서 가장 실용적**입니다.
+
+> 위 표는 논문 본문 Table 2를 그대로 옮긴 것입니다. NYC Taxi 데이터의 극단적 클래스 불균형(이상치 5/10,320) 으로 절대 F1 값은 낮으나, 본 평가는 동일 조건에서의 방법 간 상대 비교를 목적으로 합니다.
 
 ---
 
