@@ -1,0 +1,23 @@
+# Core
+numpy>=1.24.0
+pandas>=2.0.0
+scipy>=1.10.0
+
+# Time series & Bayesian modeling
+statsmodels>=0.14.0
+scikit-learn>=1.3.0
+
+# Streaming
+kafka-python>=2.0.2
+
+# Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Notebook
+jupyter>=1.0.0
+ipykernel>=6.25.0
+
+# Utility
+requests>=2.31.0
+tqdm>=4.65.0
