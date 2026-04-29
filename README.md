@@ -9,7 +9,7 @@
 
 ---
 
-## 📖 Overview
+## Overview
 
 본 레포지토리는 1저자 논문 **"SGMCMC-KF 알고리즘을 이용한 시계열 이상치 탐지"** (한국자료분석학회지, JKDAS, 2025) 의 공식 구현 코드입니다.
 
@@ -25,7 +25,7 @@
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```mermaid
 flowchart LR
@@ -47,7 +47,7 @@ flowchart LR
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 SGMCMC-KF/
@@ -61,7 +61,7 @@ SGMCMC-KF/
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. 환경 설정
 
@@ -106,7 +106,7 @@ jupyter notebook notebooks/SGMCMC_KF.ipynb
 
 ---
 
-## 🧮 Methods
+## Methods
 
 본 노트북은 다음 7가지 파라미터 추정 방법을 동일한 SARIMAX + Kalman Filter 파이프라인 위에서 통합 비교합니다.
 
@@ -160,11 +160,11 @@ DATASET = 'realKnownCause/nyc_taxi.csv'                              # 메인
 # DATASET = 'realKnownCause/machine_temperature_system_failure.csv'  # 보조
 ```
 
-> 📌 NYC Taxi 데이터는 10,320 시계열 포인트 중 라벨링된 이상치가 5개에 불과한 **극단적 클래스 불균형 벤치마크**입니다. 이 때문에 모든 방법의 절대 F1 값은 한 자릿수대로 측정되며, 본 연구의 평가는 *방법 간 상대 비교*에 초점을 둡니다.
+ NYC Taxi 데이터는 10,320 시계열 포인트 중 라벨링된 이상치가 5개에 불과한 **극단적 클래스 불균형 벤치마크**입니다. 이 때문에 모든 방법의 절대 F1 값은 한 자릿수대로 측정되며, 본 연구의 평가는 *방법 간 상대 비교*에 초점을 둡니다.
 
 ---
 
-## 🏆 Key Results
+## Key Results
 
 ### Table 2. The Results of NYC Taxi Train Dataset
 
@@ -188,13 +188,13 @@ DATASET = 'realKnownCause/nyc_taxi.csv'                              # 메인
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 `Python 3.10` · `statsmodels` · `Apache Kafka` · `Zookeeper` · `kafka-python` · `numpy` · `pandas` · `scikit-learn` · `matplotlib` · `Jupyter`
 
 ---
 
-## 📚 Citation
+## Citation
 
 본 연구를 인용하실 때는 아래 BibTeX를 사용해 주시기 바랍니다.
 
@@ -214,7 +214,7 @@ DATASET = 'realKnownCause/nyc_taxi.csv'                              # 메인
 
 ---
 
-## 🔬 Author
+## Author
 
 **홍지윤 (Jiyun Hong)**
 - 🎓 M.S. Student, Big Data Science, Korea University (Sejong Campus)
@@ -226,13 +226,13 @@ Bayesian Computation · SGMCMC · Streaming Anomaly Detection · Probabilistic T
 
 ---
 
-## 📄 License
+## License
 
 MIT License — 자세한 내용은 [LICENSE](LICENSE) 파일을 참고해 주시기 바랍니다.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - [Numenta Anomaly Benchmark](https://github.com/numenta/NAB) for the open benchmark dataset
 - statsmodels SARIMAX 구현
