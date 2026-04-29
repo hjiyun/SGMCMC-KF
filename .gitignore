@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+build/
+dist/
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Kafka logs (local)
+kafka-logs/
+zookeeper-data/
+*.log
+
+# Data (다운로드 캐시 / 대용량 데이터)
+data/raw/
+data/cache/
+*.csv.gz
+
+# 결과 / 모델
+results/
+*.pkl
+*.joblib
+checkpoints/
+
+# 환경변수 / 비밀
+.env.local
+secrets.json
+*.key
