@@ -2,7 +2,7 @@
 
 > Apache Kafka 기반 실시간 스트리밍 환경에서 **Stochastic Gradient MCMC**와 **Kalman Filter**를 결합해 SARIMAX 파라미터를 온라인으로 추론하고, 시계열 이상치를 탐지하는 베이지안 프레임워크입니다.
 
-[![Paper](https://img.shields.io/badge/JKDAS-2025-blue)](#-citation)
+[![Paper](https://img.shields.io/badge/JKDAS-2025-blue)](#citation)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 [![Kafka](https://img.shields.io/badge/Apache_Kafka-3.x-red.svg)](https://kafka.apache.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -17,11 +17,11 @@
 
 ### Key Contributions
 
-- 🎯 **SGMCMC + Kalman Filter 통합** — Kalman Filter로 우도/기울기를 계산하고 SGLD·SGHMC·SGNHT로 사후분포 샘플링
-- 🔄 **Streaming Pipeline** — Apache Kafka + Zookeeper로 배치 단위 온라인 학습 환경 구축
-- 🧪 **7종 방법 통합 비교** — MLE / GD / SGD / SGLD / SGHMC / SGNHT / Gibbs Sampling 을 단일 파이프라인에서 비교
-- 📈 **NAB 벤치마크 검증** — SGLD-KF가 F1 및 Precision 최우수 (100% Recall 유지)
-- 🎲 **BMA 기반 불확실성** — 파라미터 사후분포 분산을 신뢰구간에 반영해 적응적 이상치 임계값 설정
+- **SGMCMC + Kalman Filter 통합** — Kalman Filter로 우도/기울기를 계산하고 SGLD·SGHMC·SGNHT로 사후분포 샘플링
+- **Streaming Pipeline** — Apache Kafka + Zookeeper로 배치 단위 온라인 학습 환경 구축
+- **7종 방법 통합 비교** — MLE / GD / SGD / SGLD / SGHMC / SGNHT / Gibbs Sampling 을 단일 파이프라인에서 비교
+- **NAB 벤치마크 검증** — SGLD-KF가 F1 및 Precision 최우수 (100% Recall 유지)
+- **BMA 기반 불확실성** — 파라미터 사후분포 분산을 신뢰구간에 반영해 적응적 이상치 임계값 설정
 
 ---
 
@@ -112,13 +112,13 @@ jupyter notebook notebooks/SGMCMC_KF.ipynb
 
 | # | Method | Update Rule | Stochastic | Notes |
 |:-:|:------:|:-----------:|:----------:|:------|
-| 1 | **MLE** | `fit()` + `extend()` | ❌ | statsmodels 기반 베이스라인 |
-| 2 | **GD** | θ ← θ − η ∇U(θ) | ❌ | 사전분포 포함 full-batch |
-| 3 | **SGD** | θ ← θ − η ∇U(θ; mini-batch) | ✅ | 미니배치 stochastic gradient |
-| 4 | **SGLD** | θ ← θ − η ∇U + √(2η)·N(0,I) | ✅ | Langevin Dynamics |
-| 5 | **SGHMC** | momentum + friction | ✅ | Hamiltonian Monte Carlo |
-| 6 | **SGNHT** | adaptive thermostat | ✅ | 자동 friction 보정 |
-| 7 | **Gibbs** | 조건부 사후분포 샘플링 | ✅ | 파라미터 블록별 순차 업데이트 |
+| 1 | **MLE** | `fit()` + `extend()` | X | statsmodels 기반 베이스라인 |
+| 2 | **GD** | θ ← θ − η ∇U(θ) | X | 사전분포 포함 full-batch |
+| 3 | **SGD** | θ ← θ − η ∇U(θ; mini-batch) | O | 미니배치 stochastic gradient |
+| 4 | **SGLD** | θ ← θ − η ∇U + √(2η)·N(0,I) | O | Langevin Dynamics |
+| 5 | **SGHMC** | momentum + friction | O | Hamiltonian Monte Carlo |
+| 6 | **SGNHT** | adaptive thermostat | O | 자동 friction 보정 |
+| 7 | **Gibbs** | 조건부 사후분포 샘플링 | O | 파라미터 블록별 순차 업데이트 |
 
 방법 선택은 `fit_model(..., method='sgld')` 처럼 인자로 전환합니다.
 
@@ -142,7 +142,7 @@ SIGMA_LEVEL   = 1.2                # 이상치 신뢰구간 배수
 
 ---
 
-## 📊 Datasets
+## Datasets
 
 [NAB (Numenta Anomaly Benchmark)](https://github.com/numenta/NAB) 공개 데이터셋을 사용합니다.
 
@@ -160,7 +160,7 @@ DATASET = 'realKnownCause/nyc_taxi.csv'                              # 메인
 # DATASET = 'realKnownCause/machine_temperature_system_failure.csv'  # 보조
 ```
 
- NYC Taxi 데이터는 10,320 시계열 포인트 중 라벨링된 이상치가 5개에 불과한 **극단적 클래스 불균형 벤치마크**입니다. 이 때문에 모든 방법의 절대 F1 값은 한 자릿수대로 측정되며, 본 연구의 평가는 *방법 간 상대 비교*에 초점을 둡니다.
+> NYC Taxi 데이터는 10,320 시계열 포인트 중 라벨링된 이상치가 5개에 불과한 **극단적 클래스 불균형 벤치마크**입니다. 이 때문에 모든 방법의 절대 F1 값은 한 자릿수대로 측정되며, 본 연구의 평가는 *방법 간 상대 비교*에 초점을 둡니다.
 
 ---
 
@@ -217,9 +217,9 @@ DATASET = 'realKnownCause/nyc_taxi.csv'                              # 메인
 ## Author
 
 **홍지윤 (Jiyun Hong)**
-- 🎓 M.S. Student, Big Data Science, Korea University (Sejong Campus)
-- 🏛️ Prof. Sooyoung Jeon's Lab
-- 📧 [julie2302@naver.com](mailto:julie2302@naver.com)
+- M.S. Student, Big Data Science, Korea University (Sejong Campus)
+- Prof. Sooyoung Jeon's Lab
+- [julie2302@naver.com](mailto:julie2302@naver.com)
 
 ### Research Interests
 Bayesian Computation · SGMCMC · Streaming Anomaly Detection · Probabilistic Time Series · LLM/RAG
