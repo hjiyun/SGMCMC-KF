@@ -2,7 +2,7 @@
 
 > Apache Kafka 기반 실시간 스트리밍 환경에서 **Stochastic Gradient MCMC**와 **Kalman Filter**를 결합해 SARIMAX 파라미터를 온라인으로 추론하고, 시계열 이상치를 탐지하는 베이지안 프레임워크입니다.
 
-[![Paper](https://img.shields.io/badge/JKDAS-2025-blue)](#citation)
+[![Paper](https://img.shields.io/badge/JKDAS-2026-blue)](#citation)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 [![Kafka](https://img.shields.io/badge/Apache_Kafka-3.x-red.svg)](https://kafka.apache.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -11,7 +11,7 @@
 
 ## Overview
 
-본 레포지토리는 1저자 논문 **"SGMCMC-KF 알고리즘을 이용한 시계열 이상치 탐지"** (한국자료분석학회지, JKDAS, 2025) 의 공식 구현 코드입니다.
+본 레포지토리는 1저자 논문 **"SGMCMC-KF 알고리즘을 이용한 시계열 이상치 탐지"** (한국자료분석학회지, JKDAS 28(2), 2026) 의 공식 구현 코드입니다.
 
 기존 MLE 기반 SARIMAX는 배치마다 전체 우도를 재적합해야 하므로 스트리밍 환경에서 비효율적이고, 사전분포 정보를 반영하기도 어렵습니다. 본 연구에서는 **Kalman Filter의 score function을 SGMCMC의 gradient로 직접 사용**하여, 매 배치마다 사전분포를 포함한 사후분포에서 SARIMAX 파라미터를 온라인으로 샘플링합니다.
 
@@ -199,11 +199,14 @@ DATASET = 'realKnownCause/nyc_taxi.csv'                              # 메인
 본 연구를 인용하실 때는 아래 BibTeX를 사용해 주시기 바랍니다.
 
 ```bibtex
-@article{hong2025sgmcmckf,
+@article{hong2026sgmcmckf,
   title   = {SGMCMC-KF 알고리즘을 이용한 시계열 이상치 탐지},
   author  = {홍지윤 and 전수영},
   journal = {Journal of the Korean Data Analysis Society (JKDAS)},
-  year    = {2025},
+  volume  = {28},
+  number  = {2},
+  pages   = {621--636},
+  year    = {2026},
   note    = {제1저자}
 }
 ```
